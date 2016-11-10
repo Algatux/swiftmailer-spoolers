@@ -2,9 +2,6 @@
     "name": "algatux/swiftmailer-spoolers",
     "description": "collection of swiftmailer custom spoolers",
     "type": "library",
-    "require-dev": {
-        "swiftmailer/swiftmailer": "^5.4"
-    },
     "license": "MIT",
     "authors": [
         {
@@ -12,6 +9,18 @@
             "email": "a.galli85@gmail.com"
         }
     ],
-    "minimum-stability": "stable",
-    "require": {}
+    "require": {
+        "php" : "^7.0"
+    },
+    "require-dev": {
+        "swiftmailer/swiftmailer": "^5.4",
+        "mongodb/mongodb": "^1.0"
+    },
+    "autoload": {
+        "psr-4": { "Algatux\\SwiftmailerSpoolers\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "Tests\\": "tests/" }
+    },
+    "minimum-stability": "stable"
 }
