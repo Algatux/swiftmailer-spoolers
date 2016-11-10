@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Algatux\SwiftmailerSpoolers;
+namespace Algatux\SwiftmailerSpoolers\Mongo;
 
+use Algatux\Swiftmailer\Spoolers\Spooler\Mongo\DocumentSwiftMessageMapper;
+use Algatux\Swiftmailer\Spoolers\Spooler\Mongo\SwiftMessageMapper;
 use MongoDB\Collection;
+use MongoDB\Driver\Cursor;
 use Swift_ConfigurableSpool;
 use Swift_Message;
 use Swift_Mime_Message;
@@ -65,9 +68,11 @@ class MongoSpooler extends Swift_ConfigurableSpool
      */
     public function queueMessage(Swift_Mime_Message $message)
     {
+        $mapper = new SwiftMessageMapper($message);
+
         $this
             ->collection
-            ->insertOne([]);
+            ->insertOne($mapper->toDocument());
     }
 
     /**
@@ -80,7 +85,47 @@ class MongoSpooler extends Swift_ConfigurableSpool
      */
     public function flushQueue(Swift_Transport $transport, &$failedRecipients = null)
     {
-        $message = new Swift_Message();
-        $transport->send($message);
+        $sentEmailsNumber = 0;
+        $queue = $this->retrieveQueuedMessages();
+
+        foreach ($queue as $messageDocument) {
+
+            $mapper = new DocumentSwiftMessageMapper($messageDocument);
+
+            $actualSentNumber = $transport->send(
+                $mapper->toSwiftMessage(),
+                $failedRecipients
+            );
+
+            if (1 > $actualSentNumber) {
+                $sentEmailsNumber += $actualSentNumber;
+
+                // mark failed for retry (and increment attempt ?)
+
+                continue;
+            }
+
+            // mark sent
+        }
+
+        return $sentEmailsNumber;
+    }
+
+    /**
+     * @return object[]
+     */
+    private function retrieveQueuedMessages(): array
+    {
+        $cursor = $this
+            ->collection
+            ->find(
+                [
+                    'sent' => false,
+                    'sending' => false,
+                    'attempts' => ['$lte' => 5],
+                ]
+            );
+
+        return $cursor->toArray();
     }
 }
