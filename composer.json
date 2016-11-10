@@ -1,0 +1,17 @@
+{
+    "name": "algatux/swiftmailer-spoolers",
+    "description": "collection of swiftmailer custom spoolers",
+    "type": "library",
+    "require-dev": {
+        "swiftmailer/swiftmailer": "^5.4"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alessandro Galli",
+            "email": "a.galli85@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
